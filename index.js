@@ -31,14 +31,17 @@ async function run() {
     // await client.connect();
 
 
-    //db-access
+    // db-access
     const database = client.db("dineease");
     const menuCollection = database.collection("menu");
     const reviewCollection = database.collection("reviews");
+    const cartCollection = database.collection("carts");
 
 
-    //route connections
+    // route connections
 
+
+    // get apis
     app.get('/menu', async(req,res) => {
         const result = await menuCollection.find().toArray();
         res.send(result);
@@ -49,6 +52,19 @@ async function run() {
         res.send(result);
     })
 
+    app.get('/carts', async(req,res) => {
+      const result = await cartCollection.find().toArray();
+      res.send(result);
+    })
+
+
+    // post apis
+
+    app.post('/carts', async(req,res)=> {
+      const item = req.body;
+      const result = await cartCollection.insertOne(item);
+      res.send(result);
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
