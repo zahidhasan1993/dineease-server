@@ -12,21 +12,25 @@ const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.DB_PASS}@cluster
 app.use(cors());
 app.use(express.json());
 
-const vairfyJWT = (req,res,next) => {
+const verifyJWT = (req, res, next) => {
   const authorization = req.headers.authorization;
   if (!authorization) {
-    return res.status(401).send({error: true, message: 'User is not authorized'})   
+    return res
+      .status(401)
+      .send({ error: true, message: "User is not authorized" });
   }
-  const token = authorization.split(' ')[1];
+  const token = authorization.split(" ")[1];
 
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err,decoded) => {
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
     if (err) {
-      return res.status(401).send({error : true, message : 'user is not varified'});
+      return res
+        .status(401)
+        .send({ error: true, message: "user is not varified" });
     }
     req.decoded = decoded;
     next();
-  })
-}
+  });
+};
 //db connection
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
@@ -58,7 +62,7 @@ async function run() {
         expiresIn: "1h",
       });
 
-      res.send({token});
+      res.send({ token });
     });
     // route connections
 
@@ -73,8 +77,17 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/carts", async (req, res) => {
+    app.get("/carts", verifyJWT, async (req, res) => {
       const email = req.query.email;
+      if (!email) {
+        res.send([]);
+      }
+      const decodedEmail = req.decoded.email;
+      if (email !== decodedEmail) {
+        return res
+          .status(403)
+          .send({ error: true, message: "User has no access" });
+      }
       // console.log(email);
       const query = { userEmail: email };
       const result = await cartCollection.find(query).toArray();
