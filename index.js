@@ -84,11 +84,9 @@ async function run() {
       }
       const decodedEmail = req.decoded.email;
       if (email !== decodedEmail) {
-        return res
-          .status(403)
-          .send({ error: true, message: "User has no access" });
+        return res.send({ error: true, message: "User has no access" });
       }
-      // console.log(email);
+      console.log(email);
       const query = { userEmail: email };
       const result = await cartCollection.find(query).toArray();
       res.send(result);
