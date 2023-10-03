@@ -65,6 +65,20 @@ async function run() {
 
       res.send({ token });
     });
+
+    //admin middleware
+    const verifyAdmin = async (req,res,next) => {
+      const email = req.decoded.email;
+      const query = {email : email};
+
+      const user = await userCollection.findOne(query);
+
+      if (user?.role !== 'admin') {
+        res.status(403).send({error: true, message: 'User is not an admin'})
+      }
+
+      next()
+    }
     // route connections
 
     // get apis
@@ -94,7 +108,7 @@ async function run() {
       const result = await cartCollection.find(query).toArray();
       res.send(result);
     });
-    app.get("/users", async (req, res) => {
+    app.get("/users",verifyJWT,verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
