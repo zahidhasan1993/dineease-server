@@ -85,7 +85,9 @@ async function run() {
       }
       const decodedEmail = req.decoded.email;
       if (email !== decodedEmail) {
-        return res.status(403).send({ error: true, message: "User has no access" });
+        return res
+          .status(403)
+          .send({ error: true, message: "User has no access" });
       }
       // console.log(email);
       const query = { userEmail: email };
@@ -94,6 +96,22 @@ async function run() {
     });
     app.get("/users", async (req, res) => {
       const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+    //check admin
+    app.get("/users/admin/:email", verifyJWT, async (req, res) => {
+      const email = req.params.email;
+      const decodedEmail = req.decoded.email;
+
+      if (email !== decodedEmail) {
+        res.send({ isAdmin: false });
+      }
+
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      const result = { admin: user?.role === "admin" };
+
       res.send(result);
     });
 
