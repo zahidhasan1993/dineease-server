@@ -87,6 +87,14 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/menu/:id", async (req,res) => {
+      const id = req.params.id;
+      const query = {_id : new ObjectId(id)};
+      const result = await menuCollection.findOne(query);
+
+      res.send(result)
+    })
+
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollection.find().toArray();
       res.send(result);
@@ -171,6 +179,19 @@ async function run() {
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
+    app.patch("/menu/:id", async(req,res) => {
+      const id = req.params.id;
+      const filter = {_id : new ObjectId(id)};
+      const updatedItem = req.body;
+      const item = {
+        $set: {
+          name : updatedItem.name,
+          price : updatedItem.price
+        }
+      }
+      const result = await menuCollection.updateOne(filter,item);
+      res.send(result);
+    })
 
     //delete apis
 
@@ -189,6 +210,14 @@ async function run() {
       const result = await userCollection.deleteOne(query);
       res.send(result);
     });
+
+    app.delete('/menu/:id',verifyJWT,verifyAdmin, async (req,res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id)};
+
+      const result = await menuCollection.deleteOne(query);
+      res.send(result)
+    })
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
