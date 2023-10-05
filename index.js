@@ -14,7 +14,7 @@ app.use(express.json());
 
 const verifyJWT = (req, res, next) => {
   const authorization = req.headers.authorization;
-  console.log(authorization);
+  // console.log(authorization);
   if (!authorization) {
     return res
       .status(401)
@@ -150,6 +150,12 @@ async function run() {
         console.log("user already exists");
       }
     });
+
+    app.post('/menu',verifyJWT,verifyAdmin, async(req,res) => {
+      const item = req.body;
+      const result = await menuCollection.insertOne(item);
+      res.send(result);
+    })
 
     //patch apis
 
