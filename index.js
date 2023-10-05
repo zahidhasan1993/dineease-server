@@ -54,6 +54,7 @@ async function run() {
     const reviewCollection = database.collection("reviews");
     const cartCollection = database.collection("carts");
     const userCollection = database.collection("users");
+    const bookingCollection= database.collection('bookings');
 
     //jwt
 
@@ -163,6 +164,13 @@ async function run() {
       const item = req.body;
       const result = await menuCollection.insertOne(item);
       res.send(result);
+    })
+    app.post('/booking', async (req,res) => {
+      const item = req.body;
+      const result = await bookingCollection.insertOne(item);
+
+      res.send(result);
+
     })
 
     //patch apis
