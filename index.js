@@ -54,7 +54,7 @@ async function run() {
     const reviewCollection = database.collection("reviews");
     const cartCollection = database.collection("carts");
     const userCollection = database.collection("users");
-    const bookingCollection= database.collection('bookings');
+    const bookingCollection = database.collection("bookings");
 
     //jwt
 
@@ -68,18 +68,18 @@ async function run() {
     });
 
     //admin middleware
-    const verifyAdmin = async (req,res,next) => {
+    const verifyAdmin = async (req, res, next) => {
       const email = req.decoded.email;
-      const query = {email : email};
+      const query = { email: email };
 
       const user = await userCollection.findOne(query);
 
-      if (user?.role !== 'admin') {
-        res.status(403).send({error: true, message: 'User is not an admin'})
+      if (user?.role !== "admin") {
+        res.status(403).send({ error: true, message: "User is not an admin" });
       }
 
-      next()
-    }
+      next();
+    };
     // route connections
 
     // get apis
@@ -88,13 +88,13 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/menu/:id", async (req,res) => {
+    app.get("/menu/:id", async (req, res) => {
       const id = req.params.id;
-      const query = {_id : new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await menuCollection.findOne(query);
 
-      res.send(result)
-    })
+      res.send(result);
+    });
 
     app.get("/reviews", async (req, res) => {
       const result = await reviewCollection.find().toArray();
@@ -117,7 +117,7 @@ async function run() {
       const result = await cartCollection.find(query).toArray();
       res.send(result);
     });
-    app.get("/users",verifyJWT,verifyAdmin, async (req, res) => {
+    app.get("/users", verifyJWT, verifyAdmin, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result);
     });
@@ -137,7 +137,14 @@ async function run() {
 
       res.send(result);
     });
+    app.get("/booking/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
 
+      const result = await bookingCollection.find(query).toArray();
+
+      res.send(result);
+    });
     // post apis
 
     app.post("/carts", async (req, res) => {
@@ -160,18 +167,23 @@ async function run() {
       }
     });
 
-    app.post('/menu',verifyJWT,verifyAdmin, async(req,res) => {
+    app.post("/menu", verifyJWT, verifyAdmin, async (req, res) => {
       const item = req.body;
       const result = await menuCollection.insertOne(item);
       res.send(result);
-    })
-    app.post('/booking', async (req,res) => {
+    });
+    app.post("/booking", async (req, res) => {
       const item = req.body;
       const result = await bookingCollection.insertOne(item);
 
       res.send(result);
+    });
+    app.post("/review", async (req, res) => {
+      const item = req.body;
+      const result = await reviewCollection.insertOne(item);
 
-    })
+      res.send(result);
+    });
 
     //patch apis
 
@@ -187,19 +199,19 @@ async function run() {
       const result = await userCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
-    app.patch("/menu/:id", async(req,res) => {
+    app.patch("/menu/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = {_id : new ObjectId(id)};
+      const filter = { _id: new ObjectId(id) };
       const updatedItem = req.body;
       const item = {
         $set: {
-          name : updatedItem.name,
-          price : updatedItem.price
-        }
-      }
-      const result = await menuCollection.updateOne(filter,item);
+          name: updatedItem.name,
+          price: updatedItem.price,
+        },
+      };
+      const result = await menuCollection.updateOne(filter, item);
       res.send(result);
-    })
+    });
 
     //delete apis
 
@@ -219,13 +231,20 @@ async function run() {
       res.send(result);
     });
 
-    app.delete('/menu/:id',verifyJWT,verifyAdmin, async (req,res) => {
+    app.delete("/menu/:id", verifyJWT, verifyAdmin, async (req, res) => {
       const id = req.params.id;
-      const query = { _id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
 
       const result = await menuCollection.deleteOne(query);
-      res.send(result)
-    })
+      res.send(result);
+    });
+    app.delete("/booking/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      console.log(id);
+      const result = await bookingCollection.deleteOne(query);
+      res.send(result);
+    });
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
