@@ -145,10 +145,10 @@ async function run() {
 
       res.send(result);
     });
-    app.get("/bookings", async (req,res) => {
+    app.get("/bookings", async (req, res) => {
       const result = await bookingCollection.find().toArray();
       res.send(result);
-    })
+    });
     // post apis
 
     app.post("/carts", async (req, res) => {
@@ -201,6 +201,18 @@ async function run() {
       };
 
       const result = await userCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+    app.patch("/bookings/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          status: "approved",
+        },
+      };
+
+      const result = await bookingCollection.updateOne(filter, updatedDoc);
       res.send(result);
     });
     app.patch("/menu/:id", async (req, res) => {
