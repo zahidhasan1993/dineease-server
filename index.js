@@ -171,7 +171,7 @@ async function run() {
     })
     // post apis
 
-    app.post("/carts",verifyJWT, async (req, res) => {
+    app.post("/carts", async (req, res) => {
       const item = req.body;
       const result = await cartCollection.insertOne(item);
       res.send(result);
