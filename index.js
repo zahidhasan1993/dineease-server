@@ -3,7 +3,9 @@ const cors = require("cors");
 const port = process.env.PORT || 5000;
 const app = express();
 const jwt = require("jsonwebtoken");
-const stripe = require("stripe")('sk_test_51NH9tHKbxj1W5bNviBMKxwoIjnsEpooBKGrCDltRbzhEqfltnb7GLOSHp8L2sanh8uTXTAIylI9dZ47cEpmEQT2q00luP7mc2H');
+const stripe = require("stripe")(
+  "sk_test_51NH9tHKbxj1W5bNviBMKxwoIjnsEpooBKGrCDltRbzhEqfltnb7GLOSHp8L2sanh8uTXTAIylI9dZ47cEpmEQT2q00luP7mc2H"
+);
 require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri = `mongodb+srv://${process.env.DB_NAME}:${process.env.DB_PASS}@cluster0.uoombu0.mongodb.net/?retryWrites=true&w=majority`;
@@ -56,6 +58,7 @@ async function run() {
     const cartCollection = database.collection("carts");
     const userCollection = database.collection("users");
     const bookingCollection = database.collection("bookings");
+    const paymentCollection = database.collection("payments");
 
     //jwt
 
@@ -190,7 +193,7 @@ async function run() {
       res.send(result);
     });
     //payment-intent
-    app.post("/create-payment-intent",verifyJWT, async (req, res) => {
+    app.post("/create-payment-intent", verifyJWT, async (req, res) => {
       const { price } = req.body;
       const amount = parseInt(price * 100);
 
@@ -203,6 +206,16 @@ async function run() {
       res.send({
         clientSecret: paymentIntent.client_secret,
       });
+    });
+
+    app.post("/payment", verifyJWT, async (req, res) => {
+      const body = req.body;
+      const email = body.email;
+      console.log(email);
+      const query = { userEmail: { $regex: email } };
+      const deleteResult = await cartCollection.deleteMany(query);
+      const result = await paymentCollection.insertOne(body);
+      res.send({result,deleteResult});
     });
 
     //patch apis
@@ -273,7 +286,7 @@ async function run() {
     app.delete("/booking/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      console.log(id);
+      // console.log(id);
       const result = await bookingCollection.deleteOne(query);
       res.send(result);
     });
