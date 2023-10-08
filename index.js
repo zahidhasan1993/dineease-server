@@ -153,9 +153,25 @@ async function run() {
       const result = await bookingCollection.find().toArray();
       res.send(result);
     });
+
+    app.get('/admin-stats',verifyJWT,verifyAdmin, async(req,res) => {
+      const items = await menuCollection.estimatedDocumentCount();
+      const users = await userCollection.estimatedDocumentCount();
+      const bookings = await bookingCollection.estimatedDocumentCount();
+      const payment = await paymentCollection.find().toArray();
+
+      const revenue = payment.reduce((sum,item) => sum + item.amount,0)
+      res.send({
+        items,
+        users,
+        bookings,
+        revenue
+
+      })
+    })
     // post apis
 
-    app.post("/carts", async (req, res) => {
+    app.post("/carts",verifyJWT, async (req, res) => {
       const item = req.body;
       const result = await cartCollection.insertOne(item);
       res.send(result);
